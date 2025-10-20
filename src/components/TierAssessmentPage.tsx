@@ -1,0 +1,232 @@
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import { Label } from "./ui/label";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Progress } from "./ui/progress";
+import { Badge } from "./ui/badge";
+import { Upload, CheckCircle, AlertCircle } from "lucide-react";
+import { toast } from "sonner@2.0.3";
+
+interface TierAssessmentPageProps {
+  tier: number;
+  tierName: string;
+  onNavigate: (page: string) => void;
+  onAssessmentComplete: (score: number, responses: any[]) => void;
+}
+
+const tierQuestions = {
+  1: [
+    { id: "T1Q1", question: "Do you use passwords to protect business devices?", requiresEvidence: false, regulation: "Cybercrime Act" },
+    { id: "T1Q2", question: "Do you update your mobile apps regularly?", requiresEvidence: false, regulation: "Cybercrime Act" },
+    { id: "T1Q3", question: "Do you avoid sharing business data over public Wi-Fi?", requiresEvidence: false, regulation: "Cybercrime Act" },
+    { id: "T1Q4", question: "Are employees aware of phishing and scams?", requiresEvidence: false, regulation: "Cybercrime Act" },
+    { id: "T1Q5", question: "Do you have backup copies of important business data?", requiresEvidence: false, regulation: "Data Protection Act" }
+  ],
+  2: [
+    { id: "T2Q1", question: "Do you store customer information digitally?", requiresEvidence: false, regulation: "Data Protection Act" },
+    { id: "T2Q2", question: "Is customer data encrypted or password-protected?", requiresEvidence: true, regulation: "Data Protection Act" },
+    { id: "T2Q3", question: "Do you have antivirus software installed on all devices?", requiresEvidence: true, regulation: "BOCRA Guidelines" },
+    { id: "T2Q4", question: "Have you trained staff on data protection policies?", requiresEvidence: false, regulation: "Data Protection Act" },
+    { id: "T2Q5", question: "Do you have a data backup process?", requiresEvidence: false, regulation: "Data Protection Act" },
+    { id: "T2Q6", question: "Do you use secure email systems for business communication?", requiresEvidence: false, regulation: "Electronic Transactions Act" },
+    { id: "T2Q7", question: "Is there a process for handling data breaches?", requiresEvidence: false, regulation: "Data Protection Act" }
+  ],
+  3: [
+    { id: "T3Q1", question: "Does your website use HTTPS and SSL certificates?", requiresEvidence: true, regulation: "Electronic Transactions Act" },
+    { id: "T3Q2", question: "Do you comply with the Data Protection Act (2024)?", requiresEvidence: true, regulation: "Data Protection Act" },
+    { id: "T3Q3", question: "Are online payment systems compliant with Electronic Payments Services Regulations?", requiresEvidence: true, regulation: "Electronic Payments Services Regulations" },
+    { id: "T3Q4", question: "Do you have a documented cybersecurity policy?", requiresEvidence: true, regulation: "BOCRA Guidelines" },
+    { id: "T3Q5", question: "Do you have an incident response plan?", requiresEvidence: true, regulation: "Cybercrime Act" },
+    { id: "T3Q6", question: "Have you implemented access control and authentication for system users?", requiresEvidence: false, regulation: "Data Protection Act" },
+    { id: "T3Q7", question: "Do you perform regular system updates?", requiresEvidence: false, regulation: "BOCRA Guidelines" },
+    { id: "T3Q8", question: "Have you conducted penetration tests or security audits?", requiresEvidence: true, regulation: "BOCRA Guidelines" },
+    { id: "T3Q9", question: "Do you maintain audit logs of system access?", requiresEvidence: false, regulation: "Data Protection Act" }
+  ]
+};
+
+export function TierAssessmentPage({ tier, tierName, onNavigate, onAssessmentComplete }: TierAssessmentPageProps) {
+  const questions = tierQuestions[tier as keyof typeof tierQuestions] || tierQuestions[1];
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [responses, setResponses] = useState<any[]>([]);
+  const [currentAnswer, setCurrentAnswer] = useState("");
+  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
+
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const question = questions[currentQuestion];
+
+  const handleNext = () => {
+    if (!currentAnswer) {
+      toast.error("Please select an answer");
+      return;
+    }
+
+    if (question.requiresEvidence && currentAnswer === "Yes" && !evidenceFile) {
+      toast.warning("Evidence is recommended for this question");
+    }
+
+    const response = {
+      questionId: question.id,
+      question: question.question,
+      answer: currentAnswer,
+      evidenceProvided: !!evidenceFile,
+      regulation: question.regulation
+    };
+
+    const newResponses = [...responses, response];
+    setResponses(newResponses);
+
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setCurrentAnswer("");
+      setEvidenceFile(null);
+    } else {
+      // Calculate score and complete
+      calculateScore(newResponses);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+      const previousResponse = responses[currentQuestion - 1];
+      setCurrentAnswer(previousResponse?.answer || "");
+      setResponses(responses.slice(0, -1));
+    }
+  };
+
+  const calculateScore = (finalResponses: any[]) => {
+    const yesCount = finalResponses.filter(r => r.answer === "Yes").length;
+    const score = Math.round((yesCount / questions.length) * 100);
+    
+    toast.success("Assessment complete!");
+    onAssessmentComplete(score, finalResponses);
+    onNavigate('results');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+      setEvidenceFile(file);
+      toast.success("Evidence uploaded successfully");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4">
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <Badge className="bg-primary text-white mb-4">{tierName}</Badge>
+          <h1 className="text-primary mb-2">Compliance Assessment</h1>
+          <p className="text-gray-600">
+            Answer questions based on your business tier and upload evidence where required
+          </p>
+        </div>
+
+        {/* Progress */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-gray-600">Question {currentQuestion + 1} of {questions.length}</span>
+            <span className="text-primary">{Math.round(progress)}%</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
+
+        {/* Question Card */}
+        <Card className="p-8 shadow-lg">
+          <div className="mb-4">
+            <Badge variant="outline" className="text-blue-600 border-blue-200">
+              {question.regulation}
+            </Badge>
+          </div>
+
+          <h3 className="text-gray-900 mb-6">{question.question}</h3>
+
+          <RadioGroup value={currentAnswer} onValueChange={setCurrentAnswer}>
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center space-x-3 p-4 rounded-lg border-2 hover:border-primary transition-colors cursor-pointer">
+                <RadioGroupItem value="Yes" id="yes" />
+                <Label htmlFor="yes" className="flex-1 cursor-pointer">
+                  Yes
+                </Label>
+                {currentAnswer === "Yes" && (
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                )}
+              </div>
+
+              <div className="flex items-center space-x-3 p-4 rounded-lg border-2 hover:border-primary transition-colors cursor-pointer">
+                <RadioGroupItem value="No" id="no" />
+                <Label htmlFor="no" className="flex-1 cursor-pointer">
+                  No
+                </Label>
+                {currentAnswer === "No" && (
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                )}
+              </div>
+            </div>
+          </RadioGroup>
+
+          {/* Evidence Upload */}
+          {question.requiresEvidence && currentAnswer === "Yes" && (
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-start gap-3 mb-3">
+                <Upload className="w-5 h-5 text-primary mt-1" />
+                <div className="flex-1">
+                  <h4 className="text-gray-900 mb-1">Evidence Required</h4>
+                  <p className="text-gray-600 mb-3">
+                    Please upload supporting documentation (e.g., screenshots, policies, certificates)
+                  </p>
+                  <input
+                    type="file"
+                    onChange={handleFileUpload}
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    className="block w-full text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-blue-800 cursor-pointer"
+                  />
+                  {evidenceFile && (
+                    <p className="text-green-600 mt-2 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      {evidenceFile.name} uploaded
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-8">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={currentQuestion === 0}
+            >
+              Back
+            </Button>
+            <Button
+              onClick={handleNext}
+              className="bg-primary hover:bg-blue-800"
+            >
+              {currentQuestion === questions.length - 1 ? "Submit Assessment" : "Next Question"}
+            </Button>
+          </div>
+        </Card>
+
+        {/* Save Progress */}
+        <div className="mt-6 text-center">
+          <Button
+            variant="ghost"
+            onClick={() => toast.info("Progress saved successfully")}
+            className="text-primary"
+          >
+            Save Progress
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
