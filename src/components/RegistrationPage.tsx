@@ -1,17 +1,20 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card } from "./ui/card";
 import { Shield } from "lucide-react";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 interface RegistrationPageProps {
   onNavigate: (page: string) => void;
   onRegister: (businessName: string, email: string) => void;
 }
 
-export function RegistrationPage({ onNavigate, onRegister }: RegistrationPageProps) {
+export function RegistrationPage({
+  onNavigate,
+  onRegister,
+}: RegistrationPageProps) {
   const [businessName, setBusinessName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +22,7 @@ export function RegistrationPage({ onNavigate, onRegister }: RegistrationPagePro
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!businessName || !email || !password || !confirmPassword) {
       toast.error("Please fill in all fields");
       return;
@@ -37,14 +40,14 @@ export function RegistrationPage({ onNavigate, onRegister }: RegistrationPagePro
 
     toast.success("Registration successful! Let's classify your business.");
     onRegister(businessName, email);
-    onNavigate('tier-classification');
+    onNavigate("tier-classification");
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-blue-50 via-white to-blue-50"
       style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233b82f6' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233b82f6' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
       }}
     >
       <Card className="w-full max-w-md p-8 space-y-6 shadow-xl">
@@ -53,8 +56,12 @@ export function RegistrationPage({ onNavigate, onRegister }: RegistrationPagePro
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
             <Shield className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-primary text-center">Create Account</h2>
-          <p className="text-gray-600 text-center">Join CyberSecure to assess your business</p>
+          <h2 className="text-primary text-center font-semibold text-xl">
+            Create Account
+          </h2>
+          <p className="text-gray-600 text-center">
+            Join CyberSecure to assess your business
+          </p>
         </div>
 
         {/* Registration Form */}
@@ -111,7 +118,7 @@ export function RegistrationPage({ onNavigate, onRegister }: RegistrationPagePro
             />
           </div>
 
-          <Button 
+          <Button
             type="submit"
             className="w-full bg-primary hover:bg-blue-800 py-6"
           >
@@ -124,7 +131,7 @@ export function RegistrationPage({ onNavigate, onRegister }: RegistrationPagePro
           <p className="text-gray-600">
             Already have an account?{" "}
             <button
-              onClick={() => onNavigate('login')}
+              onClick={() => onNavigate("login")}
               className="text-primary hover:underline"
             >
               Log In
