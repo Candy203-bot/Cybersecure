@@ -1,33 +1,55 @@
+import React from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { CheckCircle, AlertTriangle, BookOpen, Users, Shield, FileText } from "lucide-react";
+import {
+  CheckCircle,
+  AlertTriangle,
+  BookOpen,
+  Users,
+  Shield,
+  FileText,
+} from "lucide-react";
 
 interface RecommendationsPageProps {
   score: number;
   tier: number;
   tierName: string;
-  responses: any[];
+  responses: { question: string; answer: string }[];
   onNavigate: (page: string) => void;
 }
 
-export function RecommendationsPage({ score, tier, tierName, responses, onNavigate }: RecommendationsPageProps) {
+export function RecommendationsPage({
+  score,
+  tier,
+  tierName,
+  responses,
+  onNavigate,
+}: RecommendationsPageProps) {
   const getRecommendations = () => {
-    const recs = [];
-    const noResponses = responses.filter(r => r.answer === "No");
+    const recs: {
+      priority: string;
+      icon: React.ElementType;
+      title: string;
+      description: string;
+      actions: string[];
+    }[] = [];
 
-    // General recommendations based on score
+    const noResponses = responses.filter((r) => r.answer === "No");
+
+    // --- General Recommendations Based on Score ---
     if (score < 40) {
       recs.push({
         priority: "High",
         icon: AlertTriangle,
         title: "Immediate Action Required",
-        description: "Your compliance score indicates significant gaps. Consider hiring a cybersecurity consultant.",
+        description:
+          "Your compliance score indicates significant gaps. Consider hiring a cybersecurity consultant.",
         actions: [
           "Conduct a comprehensive security audit",
           "Develop a cybersecurity roadmap",
-          "Allocate budget for security improvements"
-        ]
+          "Allocate budget for security improvements",
+        ],
       });
     }
 
@@ -40,104 +62,124 @@ export function RecommendationsPage({ score, tier, tierName, responses, onNaviga
         actions: [
           "Create a written cybersecurity policy",
           "Establish incident response procedures",
-          "Define roles and responsibilities"
-        ]
+          "Define roles and responsibilities",
+        ],
       });
     }
 
-    // Specific recommendations based on non-compliant areas
-    const needsPasswordPolicy = noResponses.some(r => r.question.toLowerCase().includes("password"));
+    // --- Specific Recommendations Based on Answers ---
+    const needsPasswordPolicy = noResponses.some((r) =>
+      r.question.toLowerCase().includes("password")
+    );
     if (needsPasswordPolicy) {
       recs.push({
         priority: "High",
         icon: Shield,
         title: "Implement Strong Password Policies",
-        description: "Passwords are your first line of defense against unauthorized access.",
+        description:
+          "Passwords are your first line of defense against unauthorized access.",
         actions: [
-          "Require passwords with minimum 12 characters",
+          "Require passwords with a minimum of 12 characters",
           "Enable multi-factor authentication (MFA)",
           "Use a password manager",
-          "Enforce regular password changes"
-        ]
+          "Enforce regular password changes",
+        ],
       });
     }
 
-    const needsBackup = noResponses.some(r => r.question.toLowerCase().includes("backup"));
+    const needsBackup = noResponses.some((r) =>
+      r.question.toLowerCase().includes("backup")
+    );
     if (needsBackup) {
       recs.push({
         priority: "High",
         icon: FileText,
         title: "Establish Data Backup Process",
-        description: "Regular backups protect against data loss from ransomware, hardware failure, or human error.",
+        description:
+          "Regular backups protect against data loss from ransomware, hardware failure, or human error.",
         actions: [
-          "Implement the 3-2-1 backup rule (3 copies, 2 different media, 1 offsite)",
+          "Implement the 3-2-1 backup rule (3 copies, 2 media types, 1 offsite)",
           "Automate daily backups",
           "Test backup restoration regularly",
-          "Encrypt backup data"
-        ]
+          "Encrypt backup data",
+        ],
       });
     }
 
-    const needsTraining = noResponses.some(r => r.question.toLowerCase().includes("training") || r.question.toLowerCase().includes("aware"));
+    const needsTraining = noResponses.some(
+      (r) =>
+        r.question.toLowerCase().includes("training") ||
+        r.question.toLowerCase().includes("aware")
+    );
     if (needsTraining) {
       recs.push({
         priority: "Medium",
         icon: Users,
         title: "Employee Security Awareness Training",
-        description: "Human error is a leading cause of security breaches. Train your team regularly.",
+        description:
+          "Human error is a leading cause of security breaches. Train your team regularly.",
         actions: [
           "Conduct quarterly security awareness sessions",
           "Train staff to recognize phishing emails",
-          "Create security guidelines documentation",
-          "Run simulated phishing tests"
-        ]
+          "Create internal cybersecurity guidelines",
+          "Run simulated phishing tests",
+        ],
       });
     }
 
-    const needsAntivirus = noResponses.some(r => r.question.toLowerCase().includes("antivirus"));
+    const needsAntivirus = noResponses.some((r) =>
+      r.question.toLowerCase().includes("antivirus")
+    );
     if (needsAntivirus) {
       recs.push({
         priority: "High",
         icon: Shield,
         title: "Install Antivirus Protection",
-        description: "Antivirus software is essential for protecting against malware and ransomware.",
+        description:
+          "Antivirus software is essential for protecting against malware and ransomware.",
         actions: [
           "Deploy enterprise-grade antivirus on all devices",
           "Enable real-time scanning",
           "Schedule regular system scans",
-          "Keep antivirus definitions updated"
-        ]
+          "Keep antivirus definitions updated",
+        ],
       });
     }
 
-    const needsSSL = noResponses.some(r => r.question.toLowerCase().includes("https") || r.question.toLowerCase().includes("ssl"));
+    const needsSSL = noResponses.some(
+      (r) =>
+        r.question.toLowerCase().includes("https") ||
+        r.question.toLowerCase().includes("ssl")
+    );
     if (needsSSL) {
       recs.push({
         priority: "High",
         icon: Shield,
         title: "Secure Your Website with HTTPS",
-        description: "SSL/TLS encryption protects data transmitted between your website and users.",
+        description:
+          "SSL/TLS encryption protects data transmitted between your website and users.",
         actions: [
           "Obtain an SSL certificate (free options available)",
           "Configure HTTPS on your web server",
           "Redirect all HTTP traffic to HTTPS",
-          "Update internal links to use HTTPS"
-        ]
+          "Update internal links to use HTTPS",
+        ],
       });
     }
 
-    // Add general best practices
+    // --- General Best Practices ---
     recs.push({
       priority: "Medium",
       icon: BookOpen,
       title: "Stay Informed on Regulations",
-      description: "Botswana's cybersecurity landscape is evolving. Stay updated on compliance requirements.",
+      description:
+        "Botswana's cybersecurity landscape is evolving. Stay updated on compliance requirements.",
       actions: [
         "Subscribe to BOCRA updates",
         "Review Data Protection Act requirements annually",
         "Join local cybersecurity associations",
-        "Attend compliance workshops"
-      ]
+        "Attend compliance workshops",
+      ],
     });
 
     if (tier >= 2) {
@@ -145,27 +187,32 @@ export function RecommendationsPage({ score, tier, tierName, responses, onNaviga
         priority: "Medium",
         icon: FileText,
         title: "Document Your Security Measures",
-        description: "Documentation is crucial for demonstrating compliance and maintaining consistency.",
+        description:
+          "Documentation is crucial for demonstrating compliance and maintaining consistency.",
         actions: [
           "Create a data protection policy",
-          "Document network architecture",
+          "Document your network architecture",
           "Maintain an asset inventory",
-          "Keep records of security incidents"
-        ]
+          "Keep records of security incidents",
+        ],
       });
     }
 
-    return recs.slice(0, 6); // Return top 6 recommendations
+    return recs.slice(0, 6); // Return only the top 6 recommendations
   };
 
   const recommendations = getRecommendations();
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "High": return "bg-red-500";
-      case "Medium": return "bg-yellow-500";
-      case "Low": return "bg-green-500";
-      default: return "bg-gray-500";
+      case "High":
+        return "bg-red-500";
+      case "Medium":
+        return "bg-yellow-500";
+      case "Low":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
@@ -175,46 +222,58 @@ export function RecommendationsPage({ score, tier, tierName, responses, onNaviga
         {/* Header */}
         <div className="text-center mb-8">
           <Badge className="bg-primary text-white mb-4">{tierName}</Badge>
-          <h1 className="text-primary mb-2">Recommendations</h1>
+          <h1 className="text-primary mb-2 text-3xl font-semibold">
+            Recommendations
+          </h1>
           <p className="text-gray-600">
-            Personalized guidance to improve your cybersecurity compliance
+            Personalized guidance to improve your cybersecurity compliance.
           </p>
           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full">
             <span className="text-gray-700">Your Score:</span>
-            <span className="text-primary">{score}%</span>
+            <span className="text-primary font-semibold">{score}%</span>
           </div>
         </div>
 
-        {/* Recommendations Grid */}
+        {/* Recommendations List */}
         <div className="space-y-6 mb-8">
           {recommendations.map((rec, index) => {
             const Icon = rec.icon;
             return (
-              <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+              <Card
+                key={index}
+                className="p-6 hover:shadow-lg transition-shadow border border-gray-200"
+              >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                       <Icon className="w-6 h-6 text-primary" />
                     </div>
                   </div>
-                  
+
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-gray-900">{rec.title}</h3>
-                      <Badge className={`${getPriorityColor(rec.priority)} text-white text-xs`}>
+                      <h3 className="text-gray-900 font-medium">{rec.title}</h3>
+                      <Badge
+                        className={`${getPriorityColor(
+                          rec.priority
+                        )} text-white text-xs`}
+                      >
                         {rec.priority} Priority
                       </Badge>
                     </div>
-                    
-                    <p className="text-gray-600 mb-4">
-                      {rec.description}
-                    </p>
+
+                    <p className="text-gray-600 mb-4">{rec.description}</p>
 
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="text-gray-900 mb-3">Action Steps:</h4>
+                      <h4 className="text-gray-900 mb-3 font-medium">
+                        Action Steps:
+                      </h4>
                       <ul className="space-y-2">
                         {rec.actions.map((action, i) => (
-                          <li key={i} className="flex items-start gap-2 text-gray-600">
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 text-gray-600"
+                          >
                             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                             <span>{action}</span>
                           </li>
@@ -228,12 +287,16 @@ export function RecommendationsPage({ score, tier, tierName, responses, onNaviga
           })}
         </div>
 
-        {/* Resources Section */}
+        {/* Resources */}
         <Card className="p-6 bg-blue-50 border-blue-200 mb-6">
-          <h3 className="text-gray-900 mb-4">Additional Resources</h3>
+          <h3 className="text-gray-900 mb-4 text-lg font-semibold">
+            Additional Resources
+          </h3>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <h4 className="text-gray-900">Government Resources</h4>
+              <h4 className="text-gray-900 font-medium">
+                Government Resources
+              </h4>
               <ul className="text-gray-600 space-y-1">
                 <li>• Botswana Communications Regulatory Authority (BOCRA)</li>
                 <li>• Data Protection Office</li>
@@ -241,7 +304,7 @@ export function RecommendationsPage({ score, tier, tierName, responses, onNaviga
               </ul>
             </div>
             <div className="space-y-2">
-              <h4 className="text-gray-900">Support Services</h4>
+              <h4 className="text-gray-900 font-medium">Support Services</h4>
               <ul className="text-gray-600 space-y-1">
                 <li>• Local cybersecurity consultants</li>
                 <li>• IT security training providers</li>
@@ -251,29 +314,32 @@ export function RecommendationsPage({ score, tier, tierName, responses, onNaviga
           </div>
         </Card>
 
-        {/* Action Buttons */}
+        {/* Buttons */}
         <div className="flex flex-wrap justify-center gap-4">
           <Button
-            onClick={() => onNavigate('dashboard')}
+            onClick={() => onNavigate("dashboard")}
             className="bg-primary hover:bg-blue-800"
           >
             Return to Dashboard
           </Button>
-          <Button
-            onClick={() => onNavigate('tier-assessment')}
-            variant="outline"
-          >
+          <Button onClick={() => onNavigate("tier-assessment")} variant="outline">
             Retake Assessment
           </Button>
         </div>
 
         {/* Next Steps */}
         <div className="mt-8 text-center p-6 bg-white rounded-lg border-2 border-dashed border-gray-300">
-          <h4 className="text-gray-900 mb-2">Need Expert Assistance?</h4>
+          <h4 className="text-gray-900 mb-2 font-medium">
+            Need Expert Assistance?
+          </h4>
           <p className="text-gray-600 mb-4">
-            Consider consulting with a cybersecurity professional to implement these recommendations
+            Consider consulting with a cybersecurity professional to implement
+            these recommendations.
           </p>
-          <Button variant="outline" className="border-primary text-primary hover:bg-blue-50">
+          <Button
+            variant="outline"
+            className="border-primary text-primary hover:bg-blue-50"
+          >
             Contact a Consultant
           </Button>
         </div>
